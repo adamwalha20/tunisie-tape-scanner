@@ -1,134 +1,161 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { contactService, Contact, Note, Tag } from '../services/contactService';
+import { contactService } from '../services/contactService';
 
 export default function ContactDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [contact, setContact] = useState<any>(null); // includes notes, tags
+  const [leadData, setLeadData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (id) {
       contactService.getContact(id)
         .then(data => {
-          setContact(data);
+          setLeadData(data);
           setLoading(false);
         })
         .catch(err => {
-          console.error(err);
+          console.error("Load failed:", err);
+          setError("Failed to load contact details.");
           setLoading(false);
         });
     }
   }, [id]);
 
-  if (loading) return <div className="p-8 text-center">Loading...</div>;
-  if (!contact) return <div className="p-8 text-center text-error">Contact not found</div>;
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center bg-bg-main">
+       <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  );
+  
+  if (!leadData) return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-bg-main gap-4">
+       <span className="material-symbols-outlined text-6xl text-danger">error</span>
+       <h2 className="text-xl font-bold">Contact Not Found</h2>
+       <button onClick={() => navigate('/leads')} className="text-primary font-bold">Return to Leads</button>
+    </div>
+  );
 
   return (
-    <div className="bg-background text-on-background font-body-md antialiased min-h-screen pb-[80px]">
-      <header className="bg-white dark:bg-slate-950 docked full-width top-0 border-b-2 border-green-500 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center w-full px-5 h-14 max-w-full sticky z-50">
-        <span className="material-symbols-outlined text-blue-600 dark:text-blue-400">signal_cellular_alt</span>
-        <span className="text-blue-600 dark:text-blue-400 font-black tracking-tighter font-['Inter'] font-bold text-lg tracking-tight">LeadCapture Pro</span>
-        <span className="material-symbols-outlined text-blue-600 dark:text-blue-400">sync</span>
+    <div className="bg-bg-main text-text-main min-h-screen flex flex-col pt-14 animate-fade-in">
+      <header className="fixed top-0 left-0 w-full h-14 bg-white/80 backdrop-blur-md border-b border-slate-100 flex items-center justify-between px-6 z-[60]">
+        <button onClick={() => navigate(-1)} className="text-text-muted hover:text-primary transition-colors">
+          <span className="material-symbols-outlined">arrow_back</span>
+        </button>
+        <span className="text-sm font-black tracking-tight text-text-main uppercase">Lead Details</span>
+        <button className="text-primary font-bold text-sm">Edit</button>
       </header>
 
-      <main className="px-edge-margin py-md max-w-2xl mx-auto w-full">
-        <div className="flex items-start justify-between mb-lg">
-            <div className="flex flex-col gap-unit">
-                <button onClick={() => navigate(-1)} className="flex items-center gap-xs text-on-surface-variant font-status text-status mb-sm touch-target-min -ml-sm px-sm rounded-lg active:bg-surface-container">
-                    <span className="material-symbols-outlined text-[20px]">arrow_back</span>
-                    Back
-                </button>
-                <h1 className="font-display text-display text-on-surface">{contact.name}</h1>
-                <p className="font-body-lg text-body-lg text-on-surface-variant">{(contact.notes && contact.notes[0]?.note_text) ? contact.notes[0].note_text.replace('Job Title: ', '') + ' | ' : ''}{contact.company}</p>
-            </div>
-            <button className="flex items-center justify-center gap-xs text-primary font-status text-status bg-primary-fixed text-on-primary-fixed px-md py-sm rounded-full active:bg-primary-fixed-dim transition-colors">
-                <span className="material-symbols-outlined text-[18px]">edit</span>
-                Edit
-            </button>
-        </div>
-
-        <div className="grid grid-cols-3 gap-md mb-xl">
-            <button onClick={() => contact.phone && window.open('tel:' + contact.phone)} className="bg-surface-container rounded-xl flex flex-col items-center justify-center p-md gap-sm min-h-touch-target-min active:bg-surface-container-high transition-colors border border-outline-variant/30">
-                <span className="material-symbols-outlined text-primary text-[24px]">call</span>
-                <span className="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Call</span>
-            </button>
-            <button onClick={() => contact.email && window.open('mailto:' + contact.email)} className="bg-surface-container rounded-xl flex flex-col items-center justify-center p-md gap-sm min-h-touch-target-min active:bg-surface-container-high transition-colors border border-outline-variant/30">
-                <span className="material-symbols-outlined text-primary text-[24px]">mail</span>
-                <span className="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Email</span>
-            </button>
-            <button className="bg-surface-container rounded-xl flex flex-col items-center justify-center p-md gap-sm min-h-touch-target-min active:bg-surface-container-high transition-colors border border-outline-variant/30">
-                <span className="material-symbols-outlined text-primary text-[24px]" style={{ fontVariationSettings: "'FILL' 1" }}>person_add</span>
-                <span className="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">LinkedIn</span>
-            </button>
-        </div>
-
-        <section className="mb-xl">
-            <h2 className="font-h2 text-h2 text-on-surface mb-md">Notes &amp; Specifications</h2>
-            <div className="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden focus-within:border-primary transition-colors shadow-sm">
-                <div className="bg-surface-container-low px-md py-sm flex items-center gap-md border-b border-outline-variant/50">
-                    <button className="text-on-surface-variant hover:text-primary active:scale-95 transition-all">
-                        <span className="material-symbols-outlined text-[20px]">format_list_bulleted</span>
-                    </button>
-                    <button className="text-on-surface-variant hover:text-primary active:scale-95 transition-all">
-                        <span className="material-symbols-outlined text-[20px]">check_box</span>
-                    </button>
-                    <div className="w-[1px] h-[20px] bg-outline-variant/50"></div>
-                    <button className="text-on-surface-variant hover:text-primary active:scale-95 transition-all">
-                        <span className="material-symbols-outlined text-[20px]">attach_file</span>
-                    </button>
-                </div>
-                {/* Note display (readonly for now based on UI) */}
-                <textarea 
-                  readOnly 
-                  className="w-full min-h-[160px] bg-transparent border-none p-md font-body-md text-body-md text-on-surface placeholder:text-outline focus:ring-0 resize-none" 
-                  placeholder="Enter specific product interests, budget constraints, or follow-up action items..."
-                  defaultValue={contact.notes?.map((n: Note) => n.note_text).join('\n')}
-                />
-            </div>
-            
-            <div className="mt-md">
-                <span className="font-label-caps text-label-caps text-outline uppercase tracking-wider mb-sm block">Quick Tags</span>
-                <div className="flex overflow-x-auto gap-sm pb-xs hide-scrollbar">
-                    {contact.tags?.map((t: Tag) => (
-                      <button key={t.id} className="flex-shrink-0 bg-secondary-container text-on-secondary-container font-status text-status px-md py-sm rounded-full border border-secondary/20 hover:bg-secondary-fixed transition-colors">{t.tag}</button>
-                    ))}
-                    <button className="flex-shrink-0 bg-surface-container-high text-on-surface font-status text-status px-md py-sm rounded-full border border-outline-variant hover:bg-surface-container-highest transition-colors">+ Add Tag</button>
-                </div>
-            </div>
+      <main className="flex-1 flex flex-col p-6 gap-8 w-full max-w-md mx-auto">
+        {/* Profile Header */}
+        <section className="flex flex-col items-center gap-4 py-4">
+           <div className="w-24 h-24 rounded-3xl bg-primary/10 flex items-center justify-center text-primary relative">
+              <span className="material-symbols-outlined text-5xl">person</span>
+              <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-secondary text-white rounded-xl flex items-center justify-center shadow-lg border-2 border-white">
+                 <span className="material-symbols-outlined text-sm">verified</span>
+              </div>
+           </div>
+           <div className="text-center">
+              <h1 className="text-3xl font-black tracking-tight">{leadData.name}</h1>
+              <p className="text-text-muted font-bold text-sm uppercase tracking-widest">{leadData.company || 'Private'}</p>
+           </div>
         </section>
 
-        <section className="mb-xl">
-            <h2 className="font-h2 text-h2 text-on-surface mb-md">Activity</h2>
-            <div className="flex flex-col gap-0 relative">
-                <div className="absolute left-[11px] top-[12px] bottom-[24px] w-[2px] bg-surface-variant"></div>
-                <div className="flex gap-md pb-lg relative">
-                    <div className="flex flex-col items-center pt-[4px]">
-                        <div className="w-[24px] h-[24px] rounded-full bg-primary-container flex items-center justify-center z-10 border-2 border-surface">
-                            <div className="w-[8px] h-[8px] rounded-full bg-primary"></div>
-                        </div>
-                    </div>
-                    <div className="flex-1">
-                        <div className="flex justify-between items-start mb-unit">
-                            <h3 className="font-status text-status text-on-surface">Lead Captured</h3>
-                            <span className="font-label-caps text-label-caps text-outline">
-                              {new Date(contact.created_at || '').toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </span>
-                        </div>
-                        <p className="font-body-md text-body-md text-on-surface-variant">Source: {contact.source}.</p>
-                    </div>
-                </div>
-            </div>
+        {/* Action Grid */}
+        <section className="grid grid-cols-3 gap-3">
+           <a href={`tel:${leadData.phone}`} className="glass-card p-4 flex flex-col items-center gap-2 hover:bg-primary/5 transition-all">
+              <span className="material-symbols-outlined text-primary">call</span>
+              <span className="text-[10px] font-black uppercase tracking-widest">Call</span>
+           </a>
+           <a href={`mailto:${leadData.email}`} className="glass-card p-4 flex flex-col items-center gap-2 hover:bg-primary/5 transition-all">
+              <span className="material-symbols-outlined text-primary">mail</span>
+              <span className="text-[10px] font-black uppercase tracking-widest">Email</span>
+           </a>
+           <button className="glass-card p-4 flex flex-col items-center gap-2 hover:bg-primary/5 transition-all">
+              <span className="material-symbols-outlined text-primary">share</span>
+              <span className="text-[10px] font-black uppercase tracking-widest">Share</span>
+           </button>
         </section>
+
+        {/* Lead Info */}
+        <section className="flex flex-col gap-4">
+           <h2 className="text-xl font-extrabold tracking-tight">Insights</h2>
+           <div className="glass-card p-5 flex flex-col gap-4">
+              <div className="flex items-center justify-between border-b border-slate-50 pb-3">
+                 <div className="flex items-center gap-3">
+                    <span className="material-symbols-outlined text-slate-400">workspace_premium</span>
+                    <span className="text-sm font-bold text-text-muted">Quality</span>
+                 </div>
+                 <span className={`text-xs font-black px-3 py-1 rounded-full ${
+                   leadData.notes?.[0]?.priority === 'Hot' ? 'bg-danger/10 text-danger' : 
+                   leadData.notes?.[0]?.priority === 'Warm' ? 'bg-accent/10 text-accent' : 
+                   'bg-primary/10 text-primary'
+                 }`}>
+                   {leadData.notes?.[0]?.priority || 'Warm'}
+                 </span>
+              </div>
+              <div className="flex flex-col gap-2">
+                 <span className="text-[10px] font-black text-text-muted uppercase tracking-widest">Notes</span>
+                 <p className="text-sm text-text-main leading-relaxed">
+                    {leadData.notes?.[0]?.note_text || 'No additional notes provided.'}
+                 </p>
+              </div>
+           </div>
+        </section>
+
+        {/* Tags */}
+        <section className="flex flex-col gap-4">
+           <div className="flex justify-between items-center">
+              <h2 className="text-xl font-extrabold tracking-tight">Tags</h2>
+              <button className="text-xs font-bold text-primary">+ Add</button>
+           </div>
+           <div className="flex flex-wrap gap-2">
+              {leadData.tags?.length > 0 ? leadData.tags.map((t: any) => (
+                <span key={t.id} className="px-3 py-1.5 glass-card text-xs font-bold border-slate-200">
+                   {t.tag}
+                </span>
+              )) : (
+                <span className="text-xs text-text-muted italic">No tags associated.</span>
+              )}
+           </div>
+        </section>
+
+        <div className="mt-8 flex flex-col gap-4">
+          <button 
+            disabled={isDeleting}
+            onClick={async () => {
+              if (confirm('Are you sure you want to delete this lead? This action cannot be undone.')) {
+                try {
+                  setIsDeleting(true);
+                  setError(null);
+                  await contactService.deleteContact(leadData.id);
+                  navigate('/leads', { replace: true });
+                } catch (err: any) {
+                  console.error("Delete failed:", err);
+                  setError(err.message || "Failed to delete lead.");
+                  setIsDeleting(false);
+                }
+              }
+            }}
+            className={`w-full py-4 font-bold text-sm rounded-2xl transition-all ${
+              isDeleting 
+                ? 'bg-slate-100 text-slate-400 cursor-not-allowed' 
+                : 'text-danger hover:bg-danger/5 active:bg-danger/10'
+            }`}
+          >
+            {isDeleting ? 'Deleting...' : 'Delete Lead'}
+          </button>
+
+          {error && (
+            <div className="p-4 bg-danger/10 border border-danger/20 rounded-xl">
+              <p className="text-xs text-danger font-bold text-center">{error}</p>
+            </div>
+          )}
+        </div>
       </main>
-
-      <div className="fixed bottom-0 left-0 w-full bg-surface-variant border-t border-outline-variant/30 px-edge-margin py-md z-40 pb-[calc(16px+env(safe-area-inset-bottom))] shadow-[0_-4px_12px_rgba(0,0,0,0.02)]">
-        <div className="max-w-2xl mx-auto w-full flex items-center gap-sm">
-            <span className="material-symbols-outlined text-on-surface-variant opacity-80 text-[20px]">cloud_done</span>
-            <span className="font-status text-status text-on-surface-variant flex-1">Synced to cloud</span>
-        </div>
-      </div>
     </div>
   );
 }

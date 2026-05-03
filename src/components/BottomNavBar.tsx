@@ -8,48 +8,90 @@ export default function BottomNavBar() {
   const activeTab = (path: string) => location.pathname === path;
 
   return (
-    <nav className="bg-white dark:bg-slate-950 font-['Inter'] text-[11px] font-semibold uppercase tracking-wider fixed bottom-0 left-0 w-full flex justify-around items-center px-4 h-[max(80px,calc(56px+env(safe-area-inset-bottom)))] pb-[env(safe-area-inset-bottom)] bg-white/95 backdrop-blur-sm border-t border-slate-200 dark:border-slate-800 shadow-[0_-1px_3px_0_rgba(0,0,0,0.05)] z-50">
-      {/* Dashboard Tab */}
-      <button 
-        onClick={() => navigate('/')}
-        className={`flex flex-col items-center justify-center p-2 active:scale-95 transition-transform duration-150 w-full max-w-[80px] ${
-          activeTab('/') ? 'text-blue-600 dark:text-blue-400 bg-slate-50 dark:bg-slate-900 rounded-lg' : 'text-slate-400 dark:text-slate-500 hover:text-blue-500'
-        }`}
-      >
-        <span className="material-symbols-outlined mb-1 text-[24px]" style={{ fontVariationSettings: activeTab('/') ? "'FILL' 1" : "'FILL' 0" }}>dashboard</span>
-        <span className="truncate w-full text-center">Dashboard</span>
-      </button>
+    <nav className="fixed bottom-0 left-0 w-full h-[max(85px,calc(70px+env(safe-area-inset-bottom)))] pb-[env(safe-area-inset-bottom)] bg-white/80 backdrop-blur-xl border-t border-slate-100 z-50 px-2">
+      <div className="grid grid-cols-5 h-full items-center max-w-lg mx-auto relative">
+        
+        {/* Home */}
+        <button 
+          onClick={() => navigate('/')}
+          className={`flex flex-col items-center justify-center gap-1 transition-all duration-300 relative h-full ${
+            activeTab('/') ? 'text-primary' : 'text-text-muted hover:text-primary/70'
+          }`}
+        >
+          <span className="material-symbols-outlined text-[26px]" style={{ fontVariationSettings: activeTab('/') ? "'FILL' 1" : "'FILL' 0" }}>
+            grid_view
+          </span>
+          <span className="text-[9px] font-black uppercase tracking-widest">Home</span>
+          {activeTab('/') && (
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-1 bg-primary rounded-b-full animate-fade-in" />
+          )}
+        </button>
 
-      {/* Leads Tab */}
-      <button 
-        className="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 p-2 hover:text-blue-500 active:scale-95 transition-transform duration-150 w-full max-w-[80px]"
-      >
-        <span className="material-symbols-outlined mb-1 text-[24px]">list_alt</span>
-        <span className="truncate w-full text-center">Leads</span>
-      </button>
+        {/* Leads */}
+        <button 
+          onClick={() => navigate('/leads')}
+          className={`flex flex-col items-center justify-center gap-1 transition-all duration-300 relative h-full ${
+            activeTab('/leads') ? 'text-primary' : 'text-text-muted hover:text-primary/70'
+          }`}
+        >
+          <span className="material-symbols-outlined text-[26px]" style={{ fontVariationSettings: activeTab('/leads') ? "'FILL' 1" : "'FILL' 0" }}>
+            view_list
+          </span>
+          <span className="text-[9px] font-black uppercase tracking-widest">Leads</span>
+          {activeTab('/leads') && (
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-1 bg-primary rounded-b-full animate-fade-in" />
+          )}
+        </button>
 
-      {/* Scan Tab */}
-      <button 
-        onClick={() => navigate('/scan/qr')}
-        className={`flex flex-col items-center justify-center p-2 active:scale-95 transition-transform duration-150 w-full max-w-[80px] ${
-          activeTab('/scan/qr') || activeTab('/scan/card') ? 'text-blue-600 dark:text-blue-400 bg-slate-50 dark:bg-slate-900 rounded-lg' : 'text-slate-400 dark:text-slate-500 hover:text-blue-500'
-        }`}
-      >
-        <span className="material-symbols-outlined mb-1 text-[24px]" style={{ fontVariationSettings: activeTab('/scan/qr') || activeTab('/scan/card') ? "'FILL' 1" : "'FILL' 0" }}>qr_code_scanner</span>
-        <span className="truncate w-full text-center">Scan</span>
-      </button>
+        {/* Scan FAB Placeholder - The actual button is absolute centered below */}
+        <div className="flex items-center justify-center h-full">
+           <div className="w-16 h-16" />
+        </div>
 
-      {/* Settings Tab */}
-      <button 
-        onClick={() => {
-          // just mock logout here for easy testing
-          import('../lib/supabase').then(({supabase}) => supabase.auth.signOut());
-        }}
-        className="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 p-2 hover:text-blue-500 active:scale-95 transition-transform duration-150 w-full max-w-[80px]"
-      >
-        <span className="material-symbols-outlined mb-1 text-[24px]">settings</span>
-        <span className="truncate w-full text-center">Settings</span>
-      </button>
+        {/* Manual Entry */}
+        <button 
+          onClick={() => navigate('/manual')}
+          className={`flex flex-col items-center justify-center gap-1 transition-all duration-300 relative h-full ${
+            activeTab('/manual') ? 'text-primary' : 'text-text-muted hover:text-primary/70'
+          }`}
+        >
+          <span className="material-symbols-outlined text-[26px]" style={{ fontVariationSettings: activeTab('/manual') ? "'FILL' 1" : "'FILL' 0" }}>
+            edit_note
+          </span>
+          <span className="text-[9px] font-black uppercase tracking-widest">Manual</span>
+          {activeTab('/manual') && (
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-1 bg-primary rounded-b-full animate-fade-in" />
+          )}
+        </button>
+
+        {/* Profile/Settings */}
+        <button 
+          onClick={() => navigate('/profile')}
+          className={`flex flex-col items-center justify-center gap-1 transition-all duration-300 relative h-full ${
+            activeTab('/profile') ? 'text-primary' : 'text-text-muted hover:text-primary/70'
+          }`}
+        >
+          <span className="material-symbols-outlined text-[26px]" style={{ fontVariationSettings: activeTab('/profile') ? "'FILL' 1" : "'FILL' 0" }}>
+            person
+          </span>
+          <span className="text-[9px] font-black uppercase tracking-widest">Profile</span>
+          {activeTab('/profile') && (
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-1 bg-primary rounded-b-full animate-fade-in" />
+          )}
+        </button>
+
+        {/* Floating Scan Button - Perfectly centered */}
+        <div className="absolute left-1/2 -top-8 -translate-x-1/2 z-[60] group">
+          <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full group-hover:bg-primary/40 transition-all duration-500 scale-150" />
+          <button 
+            onClick={() => navigate('/scan/qr')}
+            className="relative w-16 h-16 bg-primary text-white rounded-[22px] shadow-2xl shadow-primary/40 flex items-center justify-center premium-button hover:scale-110 hover:-rotate-6 active:scale-95 transition-all duration-300 border-[5px] border-bg-main"
+          >
+            <span className="material-symbols-outlined text-[34px]">qr_code_scanner</span>
+          </button>
+        </div>
+
+      </div>
     </nav>
   );
 }

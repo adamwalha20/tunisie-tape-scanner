@@ -9,65 +9,65 @@ export default function ScanQR() {
 
   const handleScan = async () => {
     setScanning(true);
-    const result = await scannerUtils.parseVCard('dummy raw qr data');
-    navigate('/add-manual', { state: { prefill: result } });
+    // Simulate a scan delay
+    setTimeout(async () => {
+        const result = await scannerUtils.parseVCard('dummy raw qr data');
+        navigate('/manual', { state: { prefill: { ...result, source: 'QR' } } });
+    }, 1500);
   };
 
   return (
-    <div className="bg-background text-on-background font-body-md antialiased overflow-hidden select-none">
-      <header className="bg-white dark:bg-slate-950 text-blue-600 dark:text-blue-400 font-['Inter'] font-bold text-lg tracking-tight flex justify-between items-center w-full px-5 h-14 max-w-full fixed top-0 z-50 shadow-sm">
-        <button onClick={() => navigate('/')} className="flex items-center justify-center p-2 -ml-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-          <span className="material-symbols-outlined font-normal">arrow_back</span>
+    <div className="bg-black min-h-screen flex flex-col pt-14 pb-24 animate-fade-in overflow-hidden">
+      <header className="fixed top-0 left-0 w-full h-14 bg-black/50 backdrop-blur-md border-b border-white/10 flex items-center justify-between px-6 z-[60]">
+        <button onClick={() => navigate(-1)} className="text-white/70 hover:text-white transition-colors">
+          <span className="material-symbols-outlined">arrow_back</span>
         </button>
-        <h1 className="text-blue-600 dark:text-blue-400 font-black tracking-tighter">LeadCapture Pro</h1>
-        <div className="w-10"></div> {/* Spacer to center the title since the back button takes up space */}
+        <span className="text-sm font-black tracking-tight text-white uppercase">QR Scanner</span>
+        <div className="w-10" />
       </header>
 
-      <main className="relative h-screen w-full pt-[56px] pb-[80px] bg-inverse-surface flex flex-col items-center justify-center overflow-hidden">
-        {/* Simulated Camera Feed Background */}
-        <div className="absolute inset-0 z-0">
-          <img alt="Camera feed background" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAvWZTzjQmDWZrbFwbcZ1X9GGNWoE23p59WwKvOfIGmng8C890KRHtYjVU5ZzXc75g6eTHJddS62Ob2YA89QtUn6-1V7EBbm_qZ630ZolmFXO1l72MUfhFcL_6IhFwizy_PO2jtm6_2o9i7p9-W-uXff32mQK-DvDSGGfydLeVVG-83zYl4LNwYl605hK5pOyY2BRDARJoSjZqvu20jytOv2v8Q13M1G0kXnV6x-kj09Wg9sWBQ1vBd97yQWqA2aFhjfqLFATRsZyk" />
+      <main className="flex-1 relative flex flex-col items-center justify-center p-6">
+        {/* Background Camera Simulation */}
+        <div className="absolute inset-0 z-0 opacity-40">
+           <img alt="Camera" className="w-full h-full object-cover" src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&q=80&w=1000" />
         </div>
 
-        {/* Scanner UI Overlay Container */}
-        <div className="relative z-10 w-full h-full flex flex-col items-center px-edge-margin pt-xl pb-md">
-          {/* Instruction Text */}
-          <p className="font-h1 text-h1 text-on-secondary mb-xl text-center drop-shadow-md mt-8">Place QR code in frame</p>
-          
-          {/* Scanning Reticle */}
-          <div className={`relative w-64 h-64 mt-md ${scanning ? 'animate-pulse opacity-50' : 'cursor-pointer'}`} onClick={!scanning ? handleScan : undefined}>
-            {/* Dimming Overlay outside the reticle */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full rounded-xl shadow-[0_0_0_9999px_rgba(19,27,46,0.6)] pointer-events-none"></div>
-            
-            {/* Green Highlight / Brackets */}
-            <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-secondary-fixed rounded-tl-xl"></div>
-            <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-secondary-fixed rounded-tr-xl"></div>
-            <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-secondary-fixed rounded-bl-xl"></div>
-            <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-secondary-fixed rounded-br-xl"></div>
-            
-            {/* Laser line indicator */}
-            <div className="absolute top-1/2 left-0 w-full h-[2px] bg-secondary-fixed shadow-[0_0_12px_2px_rgba(111,251,190,0.8)] opacity-80"></div>
-          </div>
-          
-          {/* Spacer to push manual entry to the bottom */}
-          <div className="flex-1"></div>
-          
-          {/* Manual Entry Fallback Card */}
-          <div className="w-full max-w-sm bg-surface rounded-xl p-sm shadow-sm border border-outline-variant flex items-center justify-between mt-auto mb-20 backdrop-blur-md bg-white/95">
-            <div className="flex items-center gap-sm pl-sm">
-              <span className="material-symbols-outlined text-outline">keyboard</span>
-              <div className="flex flex-col">
-                <span className="font-body-md text-body-md text-on-surface font-semibold">QR code won't scan?</span>
-                <span className="font-status text-status text-on-surface-variant">Enter badge ID manually</span>
+        <div className="relative z-10 flex flex-col items-center gap-8 w-full">
+           <div className="text-center">
+              <h2 className="text-white text-2xl font-black mb-2">Align QR Code</h2>
+              <p className="text-white/60 text-xs font-bold uppercase tracking-widest">Hold steady for scanning</p>
+           </div>
+
+           <div className="relative w-64 h-64 flex items-center justify-center group" onClick={!scanning ? handleScan : undefined}>
+              {/* Corner Brackets */}
+              <div className="absolute top-0 left-0 w-12 h-12 border-t-4 border-l-4 border-primary rounded-tl-3xl shadow-[0_0_15px_rgba(99,102,241,0.5)]" />
+              <div className="absolute top-0 right-0 w-12 h-12 border-t-4 border-r-4 border-primary rounded-tr-3xl shadow-[0_0_15px_rgba(99,102,241,0.5)]" />
+              <div className="absolute bottom-0 left-0 w-12 h-12 border-b-4 border-l-4 border-primary rounded-bl-3xl shadow-[0_0_15px_rgba(99,102,241,0.5)]" />
+              <div className="absolute bottom-0 right-0 w-12 h-12 border-b-4 border-r-4 border-primary rounded-br-3xl shadow-[0_0_15px_rgba(99,102,241,0.5)]" />
+              
+              {/* Scanning Laser */}
+              <div className={`w-full h-1 bg-primary/80 absolute shadow-[0_0_20px_2px_rgba(99,102,241,0.8)] ${scanning ? 'animate-[bounce_2s_infinite]' : 'top-1/2'}`} />
+
+              <div className={`w-48 h-48 border border-white/10 rounded-2xl flex items-center justify-center transition-all ${scanning ? 'scale-110 opacity-50' : 'group-hover:scale-105'}`}>
+                 <span className="material-symbols-outlined text-white/20 text-6xl">qr_code_2</span>
               </div>
-            </div>
-            <button 
-              onClick={() => navigate('/add-manual')}
-              className="h-[48px] px-lg bg-primary text-on-primary rounded-lg font-status text-status flex items-center justify-center hover:bg-primary-fixed-dim transition-colors"
-            >
-              Enter
-            </button>
-          </div>
+           </div>
+
+           {scanning && (
+             <div className="bg-white/10 backdrop-blur-xl px-6 py-3 rounded-full border border-white/20 animate-pulse">
+                <span className="text-white text-xs font-black uppercase tracking-widest">Processing Data...</span>
+             </div>
+           )}
+        </div>
+
+        <div className="absolute bottom-10 left-0 w-full px-6 z-20">
+           <button 
+             onClick={() => navigate('/manual')}
+             className="w-full h-14 bg-white/10 backdrop-blur-xl border border-white/20 text-white rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-white/20 transition-all"
+           >
+             <span className="material-symbols-outlined">keyboard</span>
+             Manual Entry
+           </button>
         </div>
       </main>
 

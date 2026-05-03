@@ -8,7 +8,7 @@ export interface Contact {
   phone?: string;
   source: 'OCR' | 'QR' | 'MANUAL';
   created_at?: string;
-  user_id?: string; // from auth
+  user_id?: string;
 }
 
 export interface Note {
@@ -27,84 +27,75 @@ export interface Tag {
   tag: string;
 }
 
-// In-memory fallback if Supabase is not configured yet
-let mockContacts: any[] = [];
-let mockCounter = 1;
-
 export const contactService = {
   async getContacts() {
-    try {
-      const { data, error } = await supabase
-        .from('contacts')
-        .select('*, tags(tag)')
-        .order('created_at', { ascending: false });
+    const { data, error } = await supabase
+      .from('contacts')
+      .select('*, tags(tag)')
+      .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      return data || [];
-    } catch (e) {
-      console.warn("Supabase fetch failed, returning mock data", e);
-      return mockContacts;
+    if (error) {
+      console.error("Supabase fetch failed", error);
+      return [];
     }
+    return data || [];
   },
 
   async getContact(id: string) {
-    try {
-      const { data, error } = await supabase
-        .from('contacts')
-        .select('*, tags(*), notes(*)')
-        .eq('id', id)
-        .single();
+    const { data, error } = await supabase
+      .from('contacts')
+      .select('*, tags(*), notes(*)')
+      .eq('id', id)
+      .single();
 
-      if (error) throw error;
-      return data;
-    } catch (e) {
-      console.warn("Supabase fetch failed, returning mock data", e);
-      return mockContacts.find(c => c.id === id) || null;
+    if (error) {
+      console.error("Supabase fetch failed", error);
+      return null;
     }
+    return data;
   },
 
   async createContact(contact: Contact, tagNames: string[], noteContext?: Partial<Note>) {
-    try {
-      let userId = undefined;
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) userId = user.id;
+    let userId = undefined;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) userId = user.id;
 
-      const { data: newContact, error } = await supabase
-        .from('contacts')
-        .insert([{ ...contact, user_id: userId }])
-        .select()
-        .single();
+    const { data: newContact, error } = await supabase
+      .from('contacts')
+      .insert([{ ...contact, user_id: userId }])
+      .select()
+      .single();
 
-      if (error) throw error;
-
-      if (tagNames.length > 0) {
-        await supabase.from('tags').insert(
-          tagNames.map(tag => ({ contact_id: newContact.id, tag }))
-        );
-      }
-
-      if (noteContext) {
-        await supabase.from('notes').insert([{
-          ...noteContext,
-          contact_id: newContact.id
-        }]);
-      }
-
-      return newContact;
-    } catch (e) {
-      console.warn("Supabase insert failed, saving to mock data", e);
-      const newId = `mock-${mockCounter++}`;
-      const newContact = { 
-        ...contact, 
-        id: newId, 
-        created_at: new Date().toISOString(),
-        tags: tagNames.map(t => ({ id: `tag-${Date.now()}`, contact_id: newId, tag: t })),
-        notes: noteContext ? [{ ...noteContext, id: `note-${Date.now()}`, contact_id: newId }] : []
-      };
-      mockContacts = [newContact, ...mockContacts];
-      return newContact;
+    if (error) {
+      console.error("Supabase insert contact failed", error);
+      throw error;
     }
+
+    if (tagNames.length > 0) {
+      const { error: tagError } = await supabase.from('tags').insert(
+        tagNames.map(tag => ({ contact_id: newContact.id, tag }))
+      );
+      if (tagError) console.error("Supabase insert tags failed", tagError);
+    }
+
+    if (noteContext) {
+      const { error: noteError } = await supabase.from('notes').insert([{
+        ...noteContext,
+        contact_id: newContact.id
+      }]);
+      if (noteError) console.error("Supabase insert note failed", noteError);
+    }
+
+    return newContact;
   },
 
-  // other functions as needed
+  async deleteContact(id: string) {
+    const { error } = await supabase
+      .from('contacts')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
+    return true;
+  }
 };
