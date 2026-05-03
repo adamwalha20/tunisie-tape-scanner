@@ -15,6 +15,7 @@ export default function ManualEntry() {
     jobTitle: prefill.jobTitle || '',
     email: prefill.email || '',
     phone: prefill.phone || '',
+    productInterest: '',
   });
   const source = prefill.source || 'MANUAL';
   
@@ -44,7 +45,7 @@ export default function ManualEntry() {
 
       const noteContext: Partial<Note> | undefined = { 
         priority: (quality as any) || 'Medium', 
-        note_text: `Job Title: ${formData.jobTitle}` 
+        note_text: `Job Title: ${formData.jobTitle}\nProduct Interest: ${formData.productInterest}` 
       };
       
       const newContact = await contactService.createContact(contact, tags, noteContext);
@@ -108,6 +109,16 @@ export default function ManualEntry() {
                   className="w-full h-14 pl-12 pr-4 glass-card border-none ring-1 ring-slate-200 focus:ring-2 focus:ring-primary outline-none transition-all"
                   value={formData.email}
                   onChange={e => setFormData({...formData, email: e.target.value})}
+                />
+             </div>
+             <div className="relative group">
+                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-primary transition-colors">category</span>
+                <input 
+                  type="text" 
+                  placeholder="Product Interested In"
+                  className="w-full h-14 pl-12 pr-4 glass-card border-none ring-1 ring-slate-200 focus:ring-2 focus:ring-primary outline-none transition-all"
+                  value={formData.productInterest}
+                  onChange={e => setFormData({...formData, productInterest: e.target.value})}
                 />
              </div>
           </div>

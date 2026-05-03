@@ -19,8 +19,8 @@ export default function Profile() {
         </div>
 
         <div className="text-center flex flex-col gap-1">
-          <h1 className="text-3xl font-black tracking-tight">John Doe</h1>
-          <p className="text-text-muted font-bold">Marketing Executive</p>
+          <h1 className="text-3xl font-black tracking-tight">TunisieTape</h1>
+          <p className="text-text-muted font-bold">Admin Account</p>
         </div>
 
         <div className="w-full grid grid-cols-2 gap-4">
