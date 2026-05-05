@@ -8,6 +8,7 @@ export default function ManualEntry() {
   const location = useLocation();
   
   const prefill = location.state?.prefill || {};
+  const editId = location.state?.editId;
   
   const [formData, setFormData] = useState({
     fullName: prefill.fullName || '',
@@ -15,12 +16,12 @@ export default function ManualEntry() {
     jobTitle: prefill.jobTitle || '',
     email: prefill.email || '',
     phone: prefill.phone || '',
-    productInterest: '',
+    productInterest: prefill.productInterest || '',
   });
   const source = prefill.source || 'MANUAL';
   
-  const [quality, setQuality] = useState<'Hot' | 'Warm' | 'Cold' | ''>('');
-  const [tags, setTags] = useState<string[]>([]);
+  const [quality, setQuality] = useState<'Hot' | 'Warm' | 'Cold' | ''>(location.state?.initialQuality || '');
+  const [tags, setTags] = useState<string[]>(location.state?.initialTags || []);
   const [loading, setLoading] = useState(false);
 
   const toggleTag = (tag: string) => {
@@ -35,7 +36,7 @@ export default function ManualEntry() {
     }
     setLoading(true);
     try {
-      const contact: Contact = {
+      const contact: Partial<Contact> = {
         name: formData.fullName,
         company: formData.company,
         email: formData.email,
@@ -48,11 +49,16 @@ export default function ManualEntry() {
         note_text: `Job Title: ${formData.jobTitle}\nProduct Interest: ${formData.productInterest}` 
       };
       
-      const newContact = await contactService.createContact(contact, tags, noteContext);
-      if (newContact && newContact.id) {
-        navigate(`/contact/${newContact.id}`);
+      if (editId) {
+        await contactService.updateContact(editId, contact, tags, noteContext);
+        navigate(`/contact/${editId}`);
       } else {
-        navigate('/leads');
+        const newContact = await contactService.createContact(contact as Contact, tags, noteContext);
+        if (newContact && newContact.id) {
+          navigate(`/contact/${newContact.id}`);
+        } else {
+          navigate('/leads');
+        }
       }
     } catch (err: any) {
       console.error(err);
@@ -67,7 +73,7 @@ export default function ManualEntry() {
         <button onClick={() => navigate(-1)} className="text-text-muted hover:text-primary transition-colors">
           <span className="material-symbols-outlined">close</span>
         </button>
-        <span className="text-sm font-black tracking-tight text-text-main uppercase">Add Lead</span>
+        <span className="text-sm font-black tracking-tight text-text-main uppercase">{editId ? 'Edit Lead' : 'Add Lead'}</span>
         <button 
           onClick={handleSave} 
           disabled={loading}
@@ -109,6 +115,16 @@ export default function ManualEntry() {
                   className="w-full h-14 pl-12 pr-4 glass-card border-none ring-1 ring-slate-200 focus:ring-2 focus:ring-primary outline-none transition-all"
                   value={formData.email}
                   onChange={e => setFormData({...formData, email: e.target.value})}
+                />
+             </div>
+             <div className="relative group">
+                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-primary transition-colors">phone</span>
+                <input 
+                  type="tel" 
+                  placeholder="Phone"
+                  className="w-full h-14 pl-12 pr-4 glass-card border-none ring-1 ring-slate-200 focus:ring-2 focus:ring-primary outline-none transition-all"
+                  value={formData.phone}
+                  onChange={e => setFormData({...formData, phone: e.target.value})}
                 />
              </div>
              <div className="relative group">
@@ -168,7 +184,7 @@ export default function ManualEntry() {
           disabled={loading}
           className="w-full h-14 bg-primary text-white rounded-2xl font-bold text-lg shadow-lg shadow-primary/20 premium-button mt-4"
         >
-          {loading ? 'Saving Lead...' : 'Complete Entry'}
+          {loading ? 'Saving Lead...' : (editId ? 'Update Lead' : 'Complete Entry')}
         </button>
       </main>
       

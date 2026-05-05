@@ -97,5 +97,42 @@ export const contactService = {
     
     if (error) throw error;
     return true;
+  },
+
+  async updateContact(id: string, contact: Partial<Contact>, tagNames: string[], noteContext?: Partial<Note>) {
+    const { data: updatedContact, error } = await supabase
+      .from('contacts')
+      .update(contact)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Supabase update contact failed", error);
+      throw error;
+    }
+
+    if (tagNames) {
+      await supabase.from('tags').delete().eq('contact_id', id);
+      if (tagNames.length > 0) {
+        const { error: tagError } = await supabase.from('tags').insert(
+          tagNames.map(tag => ({ contact_id: id, tag }))
+        );
+        if (tagError) console.error("Supabase insert tags failed", tagError);
+      }
+    }
+
+    if (noteContext) {
+      const { data: existingNotes } = await supabase.from('notes').select('id').eq('contact_id', id).limit(1);
+      if (existingNotes && existingNotes.length > 0) {
+        const { error: noteError } = await supabase.from('notes').update(noteContext).eq('id', existingNotes[0].id);
+        if (noteError) console.error("Supabase update note failed", noteError);
+      } else {
+        const { error: noteError } = await supabase.from('notes').insert([{ ...noteContext, contact_id: id }]);
+        if (noteError) console.error("Supabase insert note failed", noteError);
+      }
+    }
+
+    return updatedContact;
   }
 };

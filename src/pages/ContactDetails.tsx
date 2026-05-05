@@ -46,7 +46,37 @@ export default function ContactDetails() {
           <span className="material-symbols-outlined">arrow_back</span>
         </button>
         <span className="text-sm font-black tracking-tight text-text-main uppercase">Lead Details</span>
-        <button className="text-primary font-bold text-sm">Edit</button>
+        <button 
+          onClick={() => {
+            const note = leadData?.notes?.[0];
+            let jobTitle = '';
+            let productInterest = '';
+            if (note?.note_text) {
+              const jobMatch = note.note_text.match(/Job Title: (.*?)\n/);
+              const prodMatch = note.note_text.match(/Product Interest: (.*)/);
+              jobTitle = jobMatch ? jobMatch[1] : '';
+              productInterest = prodMatch ? prodMatch[1] : '';
+            }
+            
+            navigate('/manual', { state: {
+              editId: leadData.id,
+              prefill: {
+                fullName: leadData.name,
+                company: leadData.company,
+                email: leadData.email,
+                phone: leadData.phone,
+                jobTitle: jobTitle,
+                productInterest: productInterest,
+                source: leadData.source
+              },
+              initialQuality: note?.priority || '',
+              initialTags: leadData.tags?.map((t: any) => t.tag) || []
+            }});
+          }}
+          className="text-primary font-bold text-sm"
+        >
+          Edit
+        </button>
       </header>
 
       <main className="flex-1 flex flex-col p-6 gap-8 w-full max-w-md mx-auto">
